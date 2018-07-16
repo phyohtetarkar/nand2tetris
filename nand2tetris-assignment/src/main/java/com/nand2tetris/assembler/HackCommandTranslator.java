@@ -5,17 +5,17 @@ import java.util.Map;
 import com.nand2tetris.InstructionTableRepo;
 
 /**
- * Code translator class for handling 'Hack' command
+ * Command translator class for handling 'Hack' command
  * 
  * @author Phyo Htet Arkar
  *
  */
-public class HackCodeTranslator {
+public class HackCommandTranslator {
 	
 	private Map<String, Integer> symbolTable;
 	private InstructionTableRepo repo;
 	
-	public HackCodeTranslator(Map<String, Integer> symbolTable, InstructionTableRepo repo) {
+	public HackCommandTranslator(Map<String, Integer> symbolTable, InstructionTableRepo repo) {
 		this.symbolTable = symbolTable;
 		this.repo = repo;
 	}

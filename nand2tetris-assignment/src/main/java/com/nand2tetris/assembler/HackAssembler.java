@@ -79,7 +79,7 @@ public class HackAssembler {
 				BufferedWriter bw = new BufferedWriter(new FileWriter(outFile))) {
 			
 			InstructionTableRepo repo = new InstructionTableRepo();
-			HackCodeTranslator trans = new HackCodeTranslator(symbolTable, repo);
+			HackCommandTranslator trans = new HackCommandTranslator(symbolTable, repo);
 			
 			while (parser.hasNextCommand()) {
 				parser.parse();
