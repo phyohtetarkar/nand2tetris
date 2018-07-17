@@ -7,12 +7,16 @@ import java.io.FileReader;
 import java.io.IOException;
 
 /**
- * Parser class for handling 'Hack' machine language
+ * Parser class for handling Hack machine language
  * 
  * @author Phyo Htet Arkar
  *
  */
 public class HackParser implements AutoCloseable {
+	
+	enum CommandType {
+		A_COMMAND, C_COMMAND, L_COMMAND
+	}
 	
 	private BufferedReader reader;
 	private String cmd;
@@ -22,9 +26,6 @@ public class HackParser implements AutoCloseable {
 	private String comp;
 	private String dest;
 	private String jump;
-	
-	private boolean aInstruction;
-	private boolean cInstruction;
 	
 	public HackParser(File file) throws FileNotFoundException {
 		this.reader = new BufferedReader(new FileReader(file));
@@ -41,13 +42,13 @@ public class HackParser implements AutoCloseable {
 		return cmd != null;
 	}
 
-	public void parse() {
+	public CommandType parse() {
 		reset();
 		
 		cmd = cmd.replaceAll("\\s+", "");
 		
 		if (isNeedToSkip()) {
-			return;
+			return CommandType.L_COMMAND;
 		}
 		
 		cmd = cmd.contains("//") ? cmd.split("//", 1)[0] : cmd;
@@ -55,12 +56,12 @@ public class HackParser implements AutoCloseable {
 		System.out.println("Command: " + cmd);
 		
 		if (cmd.startsWith("@")) {
-			aInstruction = true;
+			
 			addr = cmd.replace("@", "");
+			
+			return CommandType.A_COMMAND;
+			
 		} else {
-			cInstruction = true;
-			dest = "null";
-			jump = "null";
 			
 			comp = new String(cmd);
 			
@@ -76,16 +77,10 @@ public class HackParser implements AutoCloseable {
 				comp = ary[0];
 			}
 			
+			return CommandType.C_COMMAND;
+			
 		}
 		
-	}
-
-	public boolean aInstruction() {
-		return aInstruction;
-	}
-
-	public boolean cInstruction() {
-		return cInstruction;
 	}
 	
 	public String addr() {
@@ -109,13 +104,10 @@ public class HackParser implements AutoCloseable {
 	}
 
 	private void reset() {
-		aInstruction = false;
-		cInstruction = false;
-		
 		addr = null;
 		comp = null;
-		dest = null;
-		jump = null;
+		dest = "null";
+		jump = "null";
 	}
 	
 }

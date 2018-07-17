@@ -1,11 +1,9 @@
 package com.nand2tetris.assembler;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,22 +12,18 @@ import com.nand2tetris.InstructionTableRepo;
 
 /**
  * Assembler class for translating Hack assembly codes to machine codes <br/>
- * those Hack computer understand 
+ * those Hack computer understand
  * 
  * @author Phyo Htet Arkar
  *
  */
 public class HackAssembler {
-	
-	enum CheckMode {
-		LABEL, SYMBOL
-	}
-	
+
 	/**
 	 * Symbol table based on Hack assembly syntax
 	 * 
 	 */
-	private final Map<String, Integer> symbolTable = new HashMap<>();
+	private final Map<String, String> symbolTable = new HashMap<>();
 
 	public static void main(String[] args) {
 		if (args.length == 0) {
@@ -52,77 +46,60 @@ public class HackAssembler {
 		HackAssembler assembler = new HackAssembler();
 		assembler.process(file);
 	}
-	
+
 	public HackAssembler() {
 		for (int i = 0; i < 16; i++) {
-			symbolTable.put(String.format("R%d", i), i);
+			symbolTable.put(String.format("R%d", i), intToBinary(i));
 		}
 
-		symbolTable.put("SCREEN", 16384);
-		symbolTable.put("KBD", 24576);
-		symbolTable.put("SP", 0);
-		symbolTable.put("LCL", 1);
-		symbolTable.put("ARG", 2);
-		symbolTable.put("THIS", 3);
-		symbolTable.put("THAT", 4);
+		symbolTable.put("SCREEN", intToBinary(16384));
+		symbolTable.put("KBD", intToBinary(24576));
+		symbolTable.put("SP", intToBinary(0));
+		symbolTable.put("LCL", intToBinary(1));
+		symbolTable.put("ARG", intToBinary(2));
+		symbolTable.put("THIS", intToBinary(3));
+		symbolTable.put("THAT", intToBinary(4));
 	}
-	
+
 	public void process(File file) {
-		
-		checkCommand(file, CheckMode.LABEL);
-		
-		checkCommand(file, CheckMode.SYMBOL);
+
+		checkLabel(file);
 		
 		File outFile = new File(file.getParent(), file.getName().replaceAll("asm", "hack"));
-		
+
 		try (HackParser parser = new HackParser(file);
-				BufferedWriter bw = new BufferedWriter(new FileWriter(outFile))) {
-			
-			InstructionTableRepo repo = new InstructionTableRepo();
-			HackCommandTranslator trans = new HackCommandTranslator(symbolTable, repo);
-			
+				HackCodeWriter writer = new HackCodeWriter(new InstructionTableRepo(), symbolTable, outFile)) {
+
 			while (parser.hasNextCommand()) {
-				parser.parse();
-				
-				if (parser.aInstruction()) {
-					
-					String code = trans.translateAddr(parser.addr());
-					
-					String result = "0" + code;
-					
-					bw.write(result);
-					bw.newLine();
-					
-				} else if (parser.cInstruction()) {
-					
-					String dest = trans.translateDest(parser.dest());
-					String comp = trans.translateComp(parser.comp());
-					String jump = trans.translateJump(parser.jump());
-					
-					String result = "111" + comp + dest + jump;
-					
-					bw.write(result);
-					bw.newLine();
-				}
-				
+				switch (parser.parse()) {
+				case A_COMMAND:
+					writer.writeAInstruction(parser.addr());
+					break;
+
+				case C_COMMAND:
+					writer.writeCInstruction(parser.comp(), parser.dest(), parser.jump());
+					break;
+
+				default:
+					break;
+				};
+
 			}
-			
+
 			System.out.println("Translation successful!");
-			
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		
+		} 
+
 	}
-	
-	private void checkCommand(File file, CheckMode mode) {
-		
-		int alloc = 16;
-		
+
+	private void checkLabel(File file) {
+
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-			
+
 			String line;
 			int count = 0;
 			while ((line = br.readLine()) != null) {
@@ -132,41 +109,28 @@ public class HackAssembler {
 				if (cmd.isEmpty() || cmd.startsWith("//")) {
 					continue;
 				}
-				
-				cmd = cmd.contains("//") ? cmd.split("//", 1)[0] : cmd;
-				
-				switch (mode) {
-				case LABEL:
-					if (cmd.startsWith("(")) {
-						symbolTable.put(cmd.replaceAll("[\\(\\)]", ""), count);
-						continue;
-					} 
-					
-					count++;
-					break;
 
-				case SYMBOL:
-					if (cmd.startsWith("@")) {
-						cmd = cmd.replace("@", "");
-						
-						if (!isInteger(cmd) && !symbolTable.containsKey(cmd)) {
-							symbolTable.put(cmd, alloc);
-							alloc++;
-							
-						}
-						
-					}
-					break;
+				cmd = cmd.contains("//") ? cmd.split("//", 1)[0] : cmd;
+
+				if (cmd.startsWith("(")) {
+					symbolTable.put(cmd.replaceAll("[\\(\\)]", ""), intToBinary(count));
+					continue;
 				}
+
+				count++;
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	public static boolean isInteger(String cmd) {
+
+	static boolean isInteger(String cmd) {
 		return cmd.matches("[0-9]+");
 	}
 	
+	static String intToBinary(int val) {
+		return String.format("%015d", val > 1 ? Long.parseLong(Long.toBinaryString(val)) : val);
+	}
+
 }
