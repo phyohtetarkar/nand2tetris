@@ -1,10 +1,7 @@
 package com.nand2tetris.assembler;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Parser class for handling Hack machine language
@@ -12,14 +9,14 @@ import java.io.IOException;
  * @author Phyo Htet Arkar
  *
  */
-public class HackParser implements AutoCloseable {
+public class HackParser {
 	
 	enum CommandType {
 		A_COMMAND, C_COMMAND, L_COMMAND
 	}
 	
-	private BufferedReader reader;
-	private String cmd;
+	private List<String> instructions;
+	private int nextLine = 0;
 	
 	private String addr;
 	
@@ -27,27 +24,23 @@ public class HackParser implements AutoCloseable {
 	private String dest;
 	private String jump;
 	
-	public HackParser(File file) throws FileNotFoundException {
-		this.reader = new BufferedReader(new FileReader(file));
+	public HackParser(List<String> instructions) {
+		this.instructions = instructions;
 	}
-
-	@Override
-	public void close() throws IOException {
-		reader.close();
-		reader = null;
-	}
-
+	
 	public boolean hasNextCommand() throws IOException {
-		cmd = reader.readLine();
-		return cmd != null;
+		return nextLine < instructions.size();
 	}
 
 	public CommandType parse() {
 		reset();
 		
+		String cmd = instructions.get(nextLine);
+		nextLine += 1;
+		
 		cmd = cmd.replaceAll("\\s+", "");
 		
-		if (isNeedToSkip()) {
+		if (cmd.isEmpty() || cmd.startsWith("//") || cmd.startsWith("(")) {
 			return CommandType.L_COMMAND;
 		}
 		
@@ -97,10 +90,6 @@ public class HackParser implements AutoCloseable {
 
 	public String jump() {
 		return jump;
-	}
-	
-	private boolean isNeedToSkip() {
-		return cmd.isEmpty() || cmd.startsWith("//") || cmd.startsWith("(");
 	}
 
 	private void reset() {

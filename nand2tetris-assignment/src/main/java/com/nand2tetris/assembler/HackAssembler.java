@@ -1,11 +1,11 @@
 package com.nand2tetris.assembler;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.nand2tetris.InstructionTableRepo;
@@ -18,13 +18,7 @@ import com.nand2tetris.InstructionTableRepo;
  *
  */
 public class HackAssembler {
-
-	/**
-	 * Symbol table based on Hack assembly syntax
-	 * 
-	 */
-	private final Map<String, String> symbolTable = new HashMap<>();
-
+	
 	public static void main(String[] args) {
 		if (args.length == 0) {
 			System.out.println("No file was specified.");
@@ -47,7 +41,86 @@ public class HackAssembler {
 		assembler.process(file);
 	}
 
-	public HackAssembler() {
+	public HackAssembler() { }
+
+	public void process(File file) {
+		
+		try {
+			
+			File outFile = new File(file.getParent(), file.getName().replaceAll("asm", "hack"));
+			
+			final Map<String, String> symbolTable = new HashMap<>();
+			final List<String> instructions = Files.readAllLines(file.toPath());
+			System.out.println(instructions);
+			
+			final List<String> machineCodes = new ArrayList<>();
+			
+			initSymbols(symbolTable);
+
+			checkLabel(instructions, symbolTable);
+			
+			HackCodeGenerator gen = new HackCodeGenerator(new InstructionTableRepo(), symbolTable);
+			HackParser parser = new HackParser(instructions);
+
+			while (parser.hasNextCommand()) {
+				switch (parser.parse()) {
+				case A_COMMAND:
+					machineCodes.add(gen.generateAInstruction(parser.addr()));
+					break;
+
+				case C_COMMAND:
+					machineCodes.add(gen.generateCInstruction(parser.comp(), parser.dest(), parser.jump()));
+					break;
+
+				default:
+					break;
+				};
+
+			}
+			
+			if (outFile.exists()) {
+				outFile.delete();
+			}
+			
+			Files.write(outFile.toPath(), machineCodes, StandardOpenOption.CREATE);
+
+			System.out.println("Translation successful!");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}  
+
+	}
+
+	private void checkLabel(List<String> instructions, Map<String, String> symbolTable) {
+
+		try {
+
+			int index = 0;
+
+			for (String cmd : instructions) {
+				cmd = cmd.replaceAll("\\s+", "");
+
+				if (cmd.isEmpty() || cmd.startsWith("//")) {
+					continue;
+				}
+
+				cmd = cmd.contains("//") ? cmd.split("//", 1)[0] : cmd;
+
+				if (cmd.startsWith("(")) {
+					symbolTable.put(cmd.replaceAll("[\\(\\)]", ""), intToBinary(index));
+					continue;
+				}
+
+				index++;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void initSymbols(Map<String, String> symbolTable) {
 		for (int i = 0; i < 16; i++) {
 			symbolTable.put(String.format("R%d", i), intToBinary(i));
 		}
@@ -61,76 +134,12 @@ public class HackAssembler {
 		symbolTable.put("THAT", intToBinary(4));
 	}
 
-	public void process(File file) {
-
-		checkLabel(file);
-		
-		File outFile = new File(file.getParent(), file.getName().replaceAll("asm", "hack"));
-
-		try (HackParser parser = new HackParser(file);
-				HackCodeWriter writer = new HackCodeWriter(new InstructionTableRepo(), symbolTable, outFile)) {
-
-			while (parser.hasNextCommand()) {
-				switch (parser.parse()) {
-				case A_COMMAND:
-					writer.writeAInstruction(parser.addr());
-					break;
-
-				case C_COMMAND:
-					writer.writeCInstruction(parser.comp(), parser.dest(), parser.jump());
-					break;
-
-				default:
-					break;
-				};
-
-			}
-
-			System.out.println("Translation successful!");
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-
-	}
-
-	private void checkLabel(File file) {
-
-		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-
-			String line;
-			int count = 0;
-			while ((line = br.readLine()) != null) {
-
-				String cmd = line.replaceAll("\\s+", "");
-
-				if (cmd.isEmpty() || cmd.startsWith("//")) {
-					continue;
-				}
-
-				cmd = cmd.contains("//") ? cmd.split("//", 1)[0] : cmd;
-
-				if (cmd.startsWith("(")) {
-					symbolTable.put(cmd.replaceAll("[\\(\\)]", ""), intToBinary(count));
-					continue;
-				}
-
-				count++;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	static boolean isInteger(String cmd) {
 		return cmd.matches("[0-9]+");
 	}
-	
+
 	static String intToBinary(int val) {
-		return String.format("%015d", val > 1 ? Long.parseLong(Long.toBinaryString(val)) : val);
+		return String.format("%015d", Long.parseLong(Long.toBinaryString(val)));
 	}
 
 }
