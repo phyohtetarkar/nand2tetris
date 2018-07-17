@@ -14,10 +14,10 @@ import com.nand2tetris.InstructionTableRepo;
 public class HackCodeGenerator {
 	
 	private InstructionTableRepo repo;
-	private Map<String, String> symbolTable;
+	private Map<String, Integer> symbolTable;
 	private int alloc = 16;
 	
-	public HackCodeGenerator(InstructionTableRepo repo, Map<String, String> symbolTable) throws IOException {
+	public HackCodeGenerator(InstructionTableRepo repo, Map<String, Integer> symbolTable) throws IOException {
 		this.repo = repo;
 		this.symbolTable = symbolTable;
 	}
@@ -29,15 +29,15 @@ public class HackCodeGenerator {
 	public String generateAInstruction(String cmd) {
 		String code = null;
 		
-		if (!HackAssembler.isInteger(cmd) && !symbolTable.containsKey(cmd)) {
-			symbolTable.put(cmd, HackAssembler.intToBinary(alloc));
+		if (!isInteger(cmd) && !symbolTable.containsKey(cmd)) {
+			symbolTable.put(cmd, alloc);
 			alloc++;
 		}
 		
-		if (HackAssembler.isInteger(cmd)) {
-			code = HackAssembler.intToBinary(Integer.parseInt(cmd));
+		if (isInteger(cmd)) {
+			code = intToBinary(Integer.parseInt(cmd));
 		} else {
-			code = symbolTable.get(cmd);
+			code = intToBinary(symbolTable.get(cmd));
 		}
 		
 		String aIns = "0" + code;
@@ -60,6 +60,14 @@ public class HackCodeGenerator {
 		
 		String cIns = "111" + c + d + j;
 		return cIns;
+	}
+	
+	private static boolean isInteger(String cmd) {
+		return cmd.matches("[0-9]+");
+	}
+
+	private static String intToBinary(int val) {
+		return String.format("%015d", Long.parseLong(Long.toBinaryString(val)));
 	}
 
 }

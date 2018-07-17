@@ -1,7 +1,11 @@
 package com.nand2tetris.assembler;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
+import java.io.InputStreamReader;
+import java.util.regex.Pattern;
 
 /**
  * Parser class for handling Hack machine language
@@ -11,48 +15,61 @@ import java.util.List;
  */
 public class HackParser {
 	
-	enum CommandType {
-		A_COMMAND, C_COMMAND, L_COMMAND
+	enum HackCommand {
+		A_COMMAND, C_COMMAND, L_COMMAND, COMMENT_OR_EMPTY
 	}
 	
-	private List<String> instructions;
-	private int nextLine = 0;
+	enum CommandSyntax {
+		
+	}
 	
-	private String addr;
+	private BufferedReader reader;
+	private String cmd;
+	
+	private String symbol;
 	
 	private String comp;
 	private String dest;
 	private String jump;
 	
-	public HackParser(List<String> instructions) {
-		this.instructions = instructions;
-	}
-	
+	/**
+	 * Check next command exists
+	 * 
+	 * @return true if next command exists
+	 * @throws IOException 
+	 */
 	public boolean hasNextCommand() throws IOException {
-		return nextLine < instructions.size();
+		cmd = reader.readLine();
+		return cmd != null;
 	}
 
-	public CommandType parse() {
+	/**
+	 * Parse current reading command
+	 * 
+	 * @return type of command
+	 * @see HackCommand
+	 */
+	public HackCommand parse() {
 		reset();
-		
-		String cmd = instructions.get(nextLine);
-		nextLine += 1;
 		
 		cmd = cmd.replaceAll("\\s+", "");
 		
-		if (cmd.isEmpty() || cmd.startsWith("//") || cmd.startsWith("(")) {
-			return CommandType.L_COMMAND;
+		if (cmd.isEmpty() || cmd.startsWith("//")) {
+			return HackCommand.COMMENT_OR_EMPTY;
 		}
 		
 		cmd = cmd.contains("//") ? cmd.split("//", 1)[0] : cmd;
 		
-		System.out.println("Command: " + cmd);
-		
-		if (cmd.startsWith("@")) {
+		if (cmd.startsWith("(")) {
 			
-			addr = cmd.replace("@", "");
+			symbol = cmd.replaceAll("[\\(\\)]", "");
 			
-			return CommandType.A_COMMAND;
+			return HackCommand.L_COMMAND;
+		} else if (cmd.startsWith("@")) {
+			
+			symbol = cmd.replace("@", "");
+			
+			return HackCommand.A_COMMAND;
 			
 		} else {
 			
@@ -70,33 +87,68 @@ public class HackParser {
 				comp = ary[0];
 			}
 			
-			return CommandType.C_COMMAND;
+			return HackCommand.C_COMMAND;
 			
 		}
 		
 	}
 	
-	public String addr() {
-		return addr;
+	public void setInputStream(FileInputStream in) throws FileNotFoundException {
+		reader = new BufferedReader(new InputStreamReader(in));
 	}
-
+	
+	/**
+	 * Call only if command is A_COMMAND or L_COMMAND
+	 * 
+	 * @return
+	 */
+	public String symbol() {
+		return symbol;
+	}
+	
+	/**
+	 * Call only if command is C_COMMAND
+	 * 
+	 * @return
+	 */
 	public String comp() {
 		return comp;
 	}
 
+	/**
+	 * Call only if command is C_COMMAND
+	 * 
+	 * @return
+	 */
 	public String dest() {
 		return dest;
 	}
 
+	/**
+	 * Call only if command is C_COMMAND
+	 * 
+	 * @return
+	 */
 	public String jump() {
 		return jump;
 	}
-
+	
+	private boolean isASyntax() {
+		return Pattern.matches("@[a-zA-Z0-9]+", cmd);
+	}
+	
+	private boolean isCSyntax() {
+		return Pattern.matches("", cmd);
+	}
+	
+	private boolean isLSyntax() {
+		return Pattern.matches("\\([A-Z]+\\)", cmd);
+	}
+	
 	private void reset() {
-		addr = null;
+		symbol = null;
 		comp = null;
 		dest = "null";
 		jump = "null";
 	}
-	
 }
