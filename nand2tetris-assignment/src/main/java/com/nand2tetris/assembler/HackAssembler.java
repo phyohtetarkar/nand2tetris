@@ -58,7 +58,7 @@ public class HackAssembler {
 			parser.setInputStream(in);
 
 			Map<String, Integer> symbolTable = generateSymbolTable(parser);
-			HackCodeGenerator gen = new HackCodeGenerator(new InstructionTableRepo(), symbolTable);
+			CodeGenerator gen = new CodeGenerator(new InstructionTableRepo(), symbolTable);
 			
 			in.getChannel().position(0);
 			parser.setInputStream(in);

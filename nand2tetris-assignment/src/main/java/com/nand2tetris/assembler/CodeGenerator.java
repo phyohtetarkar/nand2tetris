@@ -11,13 +11,13 @@ import com.nand2tetris.InstructionTableRepo;
  * @author Phyo Htet Arkar
  *
  */
-public class HackCodeGenerator {
+public class CodeGenerator {
 	
 	private InstructionTableRepo repo;
 	private Map<String, Integer> symbolTable;
 	private int alloc = 16;
 	
-	public HackCodeGenerator(InstructionTableRepo repo, Map<String, Integer> symbolTable) throws IOException {
+	public CodeGenerator(InstructionTableRepo repo, Map<String, Integer> symbolTable) throws IOException {
 		this.repo = repo;
 		this.symbolTable = symbolTable;
 	}

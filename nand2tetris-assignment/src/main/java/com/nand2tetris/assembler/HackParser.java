@@ -19,12 +19,13 @@ public class HackParser {
 		A_COMMAND, C_COMMAND, L_COMMAND, COMMENT_OR_EMPTY
 	}
 	
-	enum CommandSyntax {
-		
-	}
+	private static final String A_REGEX = "[@a-zA-Z0-9]+";
+	private static final String C_REGEX = "[A-Z0-9]+={0,1}[A-Z0-9+\\-!|&]*;{0,1}[A-Z]*";
+	private static final String L_REGEX = "\\({1}[A-Z]+\\){1}";
 	
 	private BufferedReader reader;
 	private String cmd;
+	private int line;
 	
 	private String symbol;
 	
@@ -40,6 +41,7 @@ public class HackParser {
 	 */
 	public boolean hasNextCommand() throws IOException {
 		cmd = reader.readLine();
+		line += 1;
 		return cmd != null;
 	}
 
@@ -60,18 +62,18 @@ public class HackParser {
 		
 		cmd = cmd.contains("//") ? cmd.split("//", 1)[0] : cmd;
 		
-		if (cmd.startsWith("(")) {
+		if (isLSyntax()) {
 			
 			symbol = cmd.replaceAll("[\\(\\)]", "");
 			
 			return HackCommand.L_COMMAND;
-		} else if (cmd.startsWith("@")) {
+		} else if (isASyntax()) {
 			
 			symbol = cmd.replace("@", "");
 			
 			return HackCommand.A_COMMAND;
 			
-		} else {
+		} else if (isCSyntax()) {
 			
 			comp = new String(cmd);
 			
@@ -88,8 +90,9 @@ public class HackParser {
 			}
 			
 			return HackCommand.C_COMMAND;
-			
 		}
+		
+		throw new RuntimeException(String.format("Syntax error at line: %d", line));
 		
 	}
 	
@@ -134,15 +137,15 @@ public class HackParser {
 	}
 	
 	private boolean isASyntax() {
-		return Pattern.matches("@[a-zA-Z0-9]+", cmd);
+		return Pattern.matches(A_REGEX, cmd);
 	}
 	
 	private boolean isCSyntax() {
-		return Pattern.matches("", cmd);
+		return Pattern.matches(C_REGEX, cmd);
 	}
 	
 	private boolean isLSyntax() {
-		return Pattern.matches("\\([A-Z]+\\)", cmd);
+		return Pattern.matches(L_REGEX, cmd);
 	}
 	
 	private void reset() {
