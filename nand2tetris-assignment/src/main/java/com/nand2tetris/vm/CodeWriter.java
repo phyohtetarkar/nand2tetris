@@ -8,14 +8,24 @@ import java.io.IOException;
 public class CodeWriter implements AutoCloseable {
 
 	private BufferedWriter writer;
+	private VMCode vmCode;
+	
+	private int eq = 0;
+	private int gt = 0;
+	private int lt = 0;
 
 	public CodeWriter(File file) throws IOException {
-		this.writer = new BufferedWriter(new FileWriter(file));
+		writer = new BufferedWriter(new FileWriter(file));
+		vmCode = VMCode.create();
 	}
 
 	public void writeArithmetic(String cmd) throws IOException {
 		writer.write(String.format("// %s\n", cmd));
 		System.out.println(String.format("// %s", cmd));
+		
+		String codes = vmCode.generate(cmd);
+		
+		writer.write(codes);
 		
 		writer.write("@SP\n");
 		
@@ -47,35 +57,36 @@ public class CodeWriter implements AutoCloseable {
 			break;
 			
 		case "eq":
-			writer.write("MD=M-D\n");
-			writer.write("@EQUAL\n");
+			writer.write("D=M-D\n");
+			writer.write("M=-1\n");
+			writer.write(String.format("@EQUAL%d\n", ++eq));
 			writer.write("D;JEQ\n");
 			writer.write("@SP\n");
 			writer.write("A=M-1\n");
-			writer.write("M=-1;JEQ\n");
-			writer.write("(EQUAL)\n");
+			writer.write("M=0\n");
+			writer.write(String.format("(EQUAL%d)\n", eq));
 			break;
 			
 		case "gt":
-			writer.write("M=0\n");
 			writer.write("D=M-D\n");
-			writer.write("@GREATER\n");
+			writer.write("M=-1\n");
+			writer.write(String.format("@GREATER%d\n", ++gt));
 			writer.write("D;JGT\n");
 			writer.write("@SP\n");
 			writer.write("A=M-1\n");
-			writer.write("M=-1;JGT\n");
-			writer.write("(GREATER)\n");
+			writer.write("M=0\n");
+			writer.write(String.format("(GREATER%d)\n", gt));
 			break;
 			
 		case "lt":
-			writer.write("M=0\n");
 			writer.write("D=M-D\n");
-			writer.write("@LESS\n");
+			writer.write("M=-1\n");
+			writer.write(String.format("@LESS%d\n", ++lt));
 			writer.write("D;JLT\n");
 			writer.write("@SP\n");
 			writer.write("A=M-1\n");
-			writer.write("M=-1;JGT\n");
-			writer.write("(LESS)\n");
+			writer.write("M=0\n");
+			writer.write(String.format("(LESS%d)\n", lt));
 			break;
 			
 		case "and":
@@ -92,6 +103,10 @@ public class CodeWriter implements AutoCloseable {
 	public void writePushPop(String cmd, String segment, int index) throws IOException {
 		writer.write(String.format("// %s %s %d\n", cmd, segment, index));
 		System.out.println(String.format("// %s %s %d", cmd, segment, index));
+		
+		String codes = vmCode.generate(cmd, segment, index);
+		
+		writer.write(codes);
 		
 		if (index > 1) {
 			writer.write("@" + index + "\n");
