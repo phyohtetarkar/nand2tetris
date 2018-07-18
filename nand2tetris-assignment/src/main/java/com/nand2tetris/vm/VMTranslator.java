@@ -1,10 +1,7 @@
 package com.nand2tetris.vm;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class VMTranslator {
 
@@ -21,23 +18,21 @@ public class VMTranslator {
 			return;
 		}
 
-		if (!file.getName().endsWith(".asm")) {
-			System.out.println("Not a hack assembly file.");
+		if (!file.getName().endsWith(".vm")) {
+			System.out.println("Not a hack vm file.");
 			return;
 		}
 
-		VMTranslator trans = new VMTranslator();
+		VMTranslator translator = new VMTranslator();
+		translator.process(file);
 	}
 
 	public void process(File file) {
 		
 		File outFile = new File(file.getParent(), file.getName().replaceAll("vm", "asm"));
 
-		try (FileInputStream in = new FileInputStream(file);
-				FileOutputStream out = new FileOutputStream(outFile)) {
-
-			VMParser parser = new VMParser(in);
-			CodeWriter writer = new CodeWriter(out);
+		try (VMParser parser = new VMParser(file);
+				CodeWriter writer = new CodeWriter(outFile)) {
 
 			while (parser.hasNextCommand()) {
 				switch (parser.parse()) {
@@ -46,26 +41,25 @@ public class VMTranslator {
 					break;
 
 				case C_PUSH:
-					
+					writer.writePushPop("push", parser.getArg1(), parser.getArg2());
 					break;
 
 				case C_POP:
+					writer.writePushPop("pop", parser.getArg1(), parser.getArg2());
+					break;
 					
+				default:
 					break;
 				}
 			}
 
-			
-
-			if (outFile.exists()) {
-				outFile.delete();
-			}
+			System.out.println("Translation successful!");
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		} 
 
 	}
 

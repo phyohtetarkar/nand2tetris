@@ -1,12 +1,13 @@
 package com.nand2tetris.vm;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
-public class VMParser {
+public class VMParser implements AutoCloseable {
 	
 	enum VMCommand {
 		C_ARITHMETIC, 
@@ -21,21 +22,21 @@ public class VMParser {
 		COMMENT_OR_EMPTY,
 	}
 	
-	private static final String LOC = "[constant|local|static|argument|this|that|temp]{1}";
-	
 	private static final String ARITHMETIC_REGEX = "add|sub|neg|eq|gt|lt|and|or|not";
 	private static final String MEMORY_ACCESS_REGEX = 
-			String.format("(push\\s%s\\s\\d)|(pop\\s%s\\s\\d)", LOC, LOC);
+			"(push|pop)\\s(constant|local|static|argument|this|that|temp|pointer)\\s[0-9]+";
 
 	private BufferedReader reader;
 	private String cmd;
 	private int line;
+	private String fileName;
 
 	private String arg1;
 	private Integer arg2;
 	
-	public VMParser(FileInputStream in) {
-		this.reader = new BufferedReader(new InputStreamReader(in));
+	public VMParser(File file) throws FileNotFoundException {
+		this.fileName = file.getName().split("\\.")[0];
+		this.reader = new BufferedReader(new FileReader(file));
 	}
 
 	public boolean hasNextCommand() throws IOException {
@@ -57,8 +58,8 @@ public class VMParser {
 		
 		if (isMemoryAccessSyntax()) {
 			String[] ms = cmd.split("\\s");
-			arg1 = ms[1];
 			arg2 = Integer.parseInt(ms[2]);
+			arg1 = formatSegment(ms[1]);
 			
 			switch (ms[0]) {
 			case "push":
@@ -91,10 +92,32 @@ public class VMParser {
 	private boolean isMemoryAccessSyntax() {
 		return Pattern.matches(MEMORY_ACCESS_REGEX, cmd);
 	}
+	
+	private String formatSegment(String segment) {
+		switch (segment) {
+		case "local":
+			return "LCL";
+		case "argument":
+			return "ARG";
+		case "this":
+			return "THIS";
+		case "that":
+			return "THAT";
+		case "static":
+			return String.format("%s.%d", fileName, arg2);
+		}
+		
+		return segment;
+	}
 
 	private void reset() {
 		arg1 = null;
 		arg2 = null;
+	}
+
+	@Override
+	public void close() throws Exception {
+		reader.close();
 	}
 
 }
