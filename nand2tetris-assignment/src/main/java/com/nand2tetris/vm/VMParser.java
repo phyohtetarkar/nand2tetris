@@ -103,6 +103,8 @@ public class VMParser implements AutoCloseable {
 			return "THIS";
 		case "that":
 			return "THAT";
+		case "temp":
+			return "TEMP";
 		case "static":
 			return String.format("%s.%d", fileName, arg2);
 		}

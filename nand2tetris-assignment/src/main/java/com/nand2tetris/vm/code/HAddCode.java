@@ -1,13 +1,15 @@
-package com.nand2tetris.vm;
+package com.nand2tetris.vm.code;
 
-public class HAddCode implements VMCode {
+import com.nand2tetris.vm.VMCode;
+
+public class HAddCode extends AbstractArithmeticCode {
 	
 	private VMCode vmCode;
 
 	@Override
 	public VMCode next(VMCode vmCode) {
 		this.vmCode = vmCode;
-		return this;
+		return vmCode;
 	}
 
 	@Override
@@ -15,7 +17,10 @@ public class HAddCode implements VMCode {
 		String cmd = (String) args[0];
 		
 		if (cmd.equals("add")) {
+			StringBuilder sb = generateBaseCode();
+			sb.append("M=D+M\n");
 			
+			return sb.toString();
 		}
 		
 		return vmCode.generate(args);
