@@ -1,13 +1,11 @@
 package com.nand2tetris.vm.code;
 
-import com.nand2tetris.vm.VMCode;
-
 /**
- * Abstract arithmetic operation for [add|sub|and|or]
+ * Abstract arithmetic operation for [add|sub|and|or|gt|lt|eq]
  * 
  * @author Phyo Htet Arkar
  */
-abstract class AbstractArithmeticCode implements VMCode {
+abstract class AbstractArithmeticCode implements VirtualMachineCode {
 	
 	protected StringBuilder generateBaseCode() {
 		StringBuilder sb = new StringBuilder();

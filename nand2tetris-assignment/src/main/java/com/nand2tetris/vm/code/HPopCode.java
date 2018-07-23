@@ -1,13 +1,11 @@
 package com.nand2tetris.vm.code;
 
-import com.nand2tetris.vm.VMCode;
-
-public class HPopCode implements VMCode {
+public class HPopCode implements VirtualMachineCode {
 	
-	private VMCode vmCode;
+	private VirtualMachineCode vmCode;
 
 	@Override
-	public VMCode next(VMCode vmCode) {
+	public VirtualMachineCode next(VirtualMachineCode vmCode) {
 		this.vmCode = vmCode;
 		return vmCode;
 	}

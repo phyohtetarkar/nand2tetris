@@ -7,7 +7,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-public class VMParser implements AutoCloseable {
+/**
+ * Parser class for handling Hack VM command
+ * 
+ * @author Phyo Htet Arkar
+ *
+ */
+public class Parser implements AutoCloseable {
 	
 	enum VMCommand {
 		C_ARITHMETIC, 
@@ -34,7 +40,7 @@ public class VMParser implements AutoCloseable {
 	private String arg1;
 	private Integer arg2;
 	
-	public VMParser(File file) throws FileNotFoundException {
+	public Parser(File file) throws FileNotFoundException {
 		this.fileName = file.getName().split("\\.")[0];
 		this.reader = new BufferedReader(new FileReader(file));
 	}

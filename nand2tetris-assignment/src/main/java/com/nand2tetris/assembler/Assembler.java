@@ -19,7 +19,7 @@ import com.nand2tetris.InstructionTableRepo;
  * @author Phyo Htet Arkar
  *
  */
-public class HackAssembler {
+public class Assembler {
 
 	public static void main(String[] args) {
 		if (args.length == 0) {
@@ -39,11 +39,11 @@ public class HackAssembler {
 			return;
 		}
 
-		HackAssembler assembler = new HackAssembler();
+		Assembler assembler = new Assembler();
 		assembler.process(file);
 	}
 	
-	public HackAssembler() {
+	public Assembler() {
 	}
 
 	public void process(File file) {
@@ -54,7 +54,7 @@ public class HackAssembler {
 
 			final List<String> machineCodes = new ArrayList<>();
 
-			HackParser parser = new HackParser();
+			Parser parser = new Parser();
 			parser.setInputStream(in);
 
 			Map<String, Integer> symbolTable = generateSymbolTable(parser);
@@ -92,7 +92,7 @@ public class HackAssembler {
 
 	}
 	
-	private Map<String, Integer> generateSymbolTable(HackParser parser) throws IOException {
+	private Map<String, Integer> generateSymbolTable(Parser parser) throws IOException {
 		Map<String, Integer> symbolTable = new HashMap<>();
 		
 		for (int i = 0; i < 16; i++) {

@@ -31,7 +31,7 @@ public class VMTranslator {
 		
 		File outFile = new File(file.getParent(), file.getName().replaceAll("vm", "asm"));
 
-		try (VMParser parser = new VMParser(file);
+		try (Parser parser = new Parser(file);
 				CodeWriter writer = new CodeWriter(outFile)) {
 
 			while (parser.hasNextCommand()) {

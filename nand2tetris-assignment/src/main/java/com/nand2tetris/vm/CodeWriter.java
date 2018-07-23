@@ -5,14 +5,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import com.nand2tetris.vm.code.VirtualMachineCode;
+
 public class CodeWriter implements AutoCloseable {
 
 	private BufferedWriter writer;
-	private VMCode vmCode;
+	private VirtualMachineCode vmCode;
 
 	public CodeWriter(File file) throws IOException {
 		writer = new BufferedWriter(new FileWriter(file));
-		vmCode = VMCode.create();
+		vmCode = VirtualMachineCode.create();
 	}
 
 	public void writeArithmetic(String cmd) throws IOException {

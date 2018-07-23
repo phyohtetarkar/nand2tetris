@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  * @author Phyo Htet Arkar
  *
  */
-public class HackParser {
+public class Parser {
 	
 	enum HackCommand {
 		A_COMMAND, C_COMMAND, L_COMMAND, COMMENT_OR_EMPTY
