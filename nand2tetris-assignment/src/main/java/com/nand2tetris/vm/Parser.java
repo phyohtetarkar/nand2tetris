@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  */
 public class Parser implements AutoCloseable {
 	
-	enum VMCommand {
+	public enum VMCommand {
 		C_ARITHMETIC, 
 		C_PUSH, 
 		C_POP, 

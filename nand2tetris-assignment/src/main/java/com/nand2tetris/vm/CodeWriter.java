@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import com.nand2tetris.vm.Parser.VMCommand;
 import com.nand2tetris.vm.code.VirtualMachineCode;
 
 public class CodeWriter implements AutoCloseable {
@@ -27,7 +28,7 @@ public class CodeWriter implements AutoCloseable {
 		
 	}
 
-	public void writePushPop(String cmd, String segment, int index) throws IOException {
+	public void writePushPop(VMCommand cmd, String segment, int index) throws IOException {
 		writer.write(String.format("// %s %s %d\n", cmd, segment, index));
 		System.out.println(String.format("// %s %s %d", cmd, segment, index));
 		

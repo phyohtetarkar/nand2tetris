@@ -1,5 +1,7 @@
 package com.nand2tetris.vm.code;
 
+import com.nand2tetris.vm.Parser.VMCommand;
+
 public class HPushCode implements VirtualMachineCode {
 	
 	private VirtualMachineCode vmCode;
@@ -12,9 +14,9 @@ public class HPushCode implements VirtualMachineCode {
 
 	@Override
 	public String generate(Object...args) {
-		String cmd = (String) args[0];
+		VMCommand cmd = (VMCommand) args[0];
 		
-		if (cmd.equals("push")) {
+		if (cmd == VMCommand.C_PUSH) {
 			
 			String segment = (String) args[1];
 			int index = (int) args[2];

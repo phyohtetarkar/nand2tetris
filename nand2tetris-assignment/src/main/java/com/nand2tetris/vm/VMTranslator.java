@@ -3,6 +3,8 @@ package com.nand2tetris.vm;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import com.nand2tetris.vm.Parser.VMCommand;
+
 public class VMTranslator {
 
 	public static void main(String[] args) {
@@ -35,17 +37,16 @@ public class VMTranslator {
 				CodeWriter writer = new CodeWriter(outFile)) {
 
 			while (parser.hasNextCommand()) {
-				switch (parser.parse()) {
+				VMCommand cmd = parser.parse();
+				
+				switch (cmd) {
 				case C_ARITHMETIC:
 					writer.writeArithmetic(parser.getArg1());
 					break;
 
 				case C_PUSH:
-					writer.writePushPop("push", parser.getArg1(), parser.getArg2());
-					break;
-
 				case C_POP:
-					writer.writePushPop("pop", parser.getArg1(), parser.getArg2());
+					writer.writePushPop(cmd, parser.getArg1(), parser.getArg2());
 					break;
 					
 				default:
