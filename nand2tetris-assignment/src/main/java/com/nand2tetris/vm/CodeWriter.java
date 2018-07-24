@@ -22,7 +22,7 @@ public class CodeWriter implements AutoCloseable {
 		writer.write(String.format("// %s\n", cmd));
 		System.out.println(String.format("// %s", cmd));
 		
-		String codes = vmCode.generate(cmd);
+		String codes = vmCode.generate(VMCommand.C_ARITHMETIC, cmd);
 		
 		writer.write(codes);
 		

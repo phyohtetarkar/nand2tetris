@@ -13,12 +13,10 @@ public class HPopCode implements VirtualMachineCode {
 	}
 
 	@Override
-	public String generate(Object...args) {
-		VMCommand cmd = (VMCommand) args[0];
-		
-		if (cmd == VMCommand.C_POP) {
-			String segment = (String) args[1];
-			int index = (int) args[2];
+	public String generate(VMCommand type, Object...args) {
+		if (type == VMCommand.C_POP) {
+			String segment = (String) args[0];
+			int index = (int) args[1];
 			
 			StringBuilder sb = new StringBuilder();
 			
@@ -69,7 +67,7 @@ public class HPopCode implements VirtualMachineCode {
 			return sb.toString();
 		}
 		
-		return vmCode.generate(args);
+		return vmCode.generate(type, args);
 	}
 
 }

@@ -13,13 +13,12 @@ public class HPushCode implements VirtualMachineCode {
 	}
 
 	@Override
-	public String generate(Object...args) {
-		VMCommand cmd = (VMCommand) args[0];
+	public String generate(VMCommand type, Object...args) {
 		
-		if (cmd == VMCommand.C_PUSH) {
+		if (type == VMCommand.C_PUSH) {
 			
-			String segment = (String) args[1];
-			int index = (int) args[2];
+			String segment = (String) args[0];
+			int index = (int) args[1];
 			
 			StringBuilder sb = new StringBuilder();
 			if (segment.equals("pointer")) {
@@ -53,7 +52,7 @@ public class HPushCode implements VirtualMachineCode {
 			return sb.toString();
 		}
 		
-		return vmCode.generate(args);
+		return vmCode.generate(type, args);
 	}
 
 }

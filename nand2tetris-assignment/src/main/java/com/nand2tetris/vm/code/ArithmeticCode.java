@@ -1,5 +1,7 @@
 package com.nand2tetris.vm.code;
 
+import com.nand2tetris.vm.Parser.VMCommand;
+
 public class ArithmeticCode extends AbstractArithmeticCode {
 	
 	private VirtualMachineCode code;
@@ -11,44 +13,45 @@ public class ArithmeticCode extends AbstractArithmeticCode {
 	}
 	
 	@Override
-	public String generate(Object... args) {
-		String cmd = (String) args[0];
+	public String generate(VMCommand type, Object... args) {
 		
-		if (cmd.matches("add|sub|and|or|not|neg")) {
-			StringBuilder sb;
+		if (type == VMCommand.C_ARITHMETIC) {
+			String cmd = (String) args[0];
 			
-			if (cmd.matches("neg|not")) {
-				sb = new StringBuilder();
+			if (cmd.matches("eq|gt|lt")) {
+				StringBuilder sb = super.generateBaseCode();
+				sb.append("D=M-D\n");
+				sb.append("M=-1\n");
+				
+				String logicType = logicType(cmd);
+				int c = count(cmd);
+				
+				sb.append(String.format("@%s%d\n", logicType, c));
+				sb.append(jump(cmd));
 				sb.append("@SP\n");
 				sb.append("A=M-1\n");
+				sb.append("M=0\n");
+				sb.append(String.format("(%s%d)\n", logicType, c));
+				
+				return sb.toString();
 			} else {
-				sb = super.generateBaseCode();
+				StringBuilder sb;
+				
+				if (cmd.matches("neg|not")) {
+					sb = new StringBuilder();
+					sb.append("@SP\n");
+					sb.append("A=M-1\n");
+				} else {
+					sb = super.generateBaseCode();
+				}
+				
+				sb.append(operation(cmd));
+				
+				return sb.toString();
 			}
-			
-			sb.append(operation(cmd));
-			return sb.toString();
 		}
 		
-		return code.generate(args);
-	}
-	
-	private String operation(String cmd) {
-		switch (cmd) {
-		case "add":
-			return "M=D+M\n";
-		case "sub":
-			return "M=M-D\n";
-		case "and":
-			return "M=D&M\n";
-		case "or":
-			return "M=D|M\n";
-		case "neg":
-			return "M=-M\n";
-		case "not":
-			return "M=!M\n";
-		}
-		
-		return "";
+		return code.generate(type, args);
 	}
 	
 }
