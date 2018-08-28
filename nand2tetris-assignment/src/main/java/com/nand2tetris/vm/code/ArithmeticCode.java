@@ -4,12 +4,15 @@ import com.nand2tetris.vm.Parser.VMCommand;
 
 public class ArithmeticCode extends AbstractArithmeticCode {
 	
-	private VirtualMachineCode code;
+	private VirtualMachineCode vmCode;
 	
 	@Override
-	public VirtualMachineCode next(VirtualMachineCode code) {
-		this.code = code;
-		return code;
+	public void next(VirtualMachineCode vmCode) {
+		if (this.vmCode == null) {
+			this.vmCode = vmCode;
+		} else {
+			this.vmCode.next(vmCode);
+		}
 	}
 	
 	@Override
@@ -51,7 +54,7 @@ public class ArithmeticCode extends AbstractArithmeticCode {
 			}
 		}
 		
-		return code.generate(type, args);
+		return vmCode.generate(type, args);
 	}
 	
 }

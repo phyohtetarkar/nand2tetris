@@ -7,9 +7,12 @@ public class HPushCode implements VirtualMachineCode {
 	private VirtualMachineCode vmCode;
 
 	@Override
-	public VirtualMachineCode next(VirtualMachineCode vmCode) {
-		this.vmCode = vmCode;
-		return vmCode;
+	public void next(VirtualMachineCode vmCode) {
+		if (this.vmCode == null) {
+			this.vmCode = vmCode;
+		} else {
+			this.vmCode.next(vmCode);
+		}
 	}
 
 	@Override
